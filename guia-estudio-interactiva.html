@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guía de Estudio Interactiva · Simulador EDUCEM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0b0e14;
+    --bg-soft:#11151d;
+    --card:#161b25;
+    --card-hover:#1c2230;
+    --border:#262c3a;
+    --text:#e9edf5;
+    --muted:#8891a3;
+    --muted2:#5c6377;
+    --good:#3ddc97;
+    --bad:#ff6b6b;
+    --accent: var(--cat-color, #8b5cf6);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(1200px 600px at 10% -10%, rgba(139,92,246,0.08), transparent),
+      radial-gradient(1000px 500px at 90% 0%, rgba(45,212,191,0.06), transparent),
+      var(--bg);
+    color:var(--text);
+    font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+    padding-bottom:60px;
+  }
+  h1,h2,h3{font-family:'Fraunces',serif; margin:0;}
+  .wrap{max-width:900px; margin:0 auto; padding:22px 16px 0;}
+
+  /* ===== Header ===== */
+  header.top{padding:6px 0 18px; border-bottom:1px solid var(--border); margin-bottom:18px;}
+  .eyebrow{font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--muted2); margin-bottom:8px;}
+  header.top h1{font-size:26px; font-weight:600; line-height:1.15; letter-spacing:-0.01em;}
+  header.top h1 span{color:#8b5cf6;}
+  header.top p{color:var(--muted); font-size:14.5px; margin-top:8px; line-height:1.5; max-width:60ch;}
+
+  .stat-row{display:flex; gap:10px; margin-top:16px; flex-wrap:wrap;}
+  .stat-chip{
+    background:var(--card); border:1px solid var(--border); border-radius:12px;
+    padding:9px 14px; font-size:12.5px; color:var(--muted); display:flex; gap:7px; align-items:baseline;
+  }
+  .stat-chip b{font-family:'JetBrains Mono',monospace; color:var(--text); font-size:15px;}
+
+  .overall-bar{height:6px; border-radius:6px; background:var(--border); margin-top:14px; overflow:hidden;}
+  .overall-bar > div{height:100%; background:linear-gradient(90deg,#8b5cf6,#2dd4bf); transition:width .4s ease;}
+
+  /* ===== Category nav ===== */
+  nav.cats{
+    display:flex; gap:9px; overflow-x:auto; padding:4px 2px 14px;
+    -webkit-overflow-scrolling:touch;
+  }
+  nav.cats::-webkit-scrollbar{height:5px;}
+  nav.cats::-webkit-scrollbar-thumb{background:var(--border); border-radius:6px;}
+  .cat-pill{
+    flex:0 0 auto; cursor:pointer; user-select:none;
+    display:flex; flex-direction:column; gap:2px;
+    background:var(--card); border:1px solid var(--border); border-radius:14px;
+    padding:10px 14px; min-width:140px;
+    transition:transform .15s ease, border-color .15s ease, background .15s ease;
+  }
+  .cat-pill:hover{transform:translateY(-2px); background:var(--card-hover);}
+  .cat-pill.active{border-color: var(--pill-color); box-shadow:0 0 0 1px var(--pill-color) inset;}
+  .cat-pill .cat-label{font-size:13px; font-weight:600; display:flex; align-items:center; gap:6px; white-space:nowrap;}
+  .cat-pill .cat-sub{font-size:11px; color:var(--muted); font-family:'JetBrains Mono',monospace;}
+  .cat-pill .cat-progress{height:3px; border-radius:3px; background:var(--border); margin-top:6px; overflow:hidden;}
+  .cat-pill .cat-progress > div{height:100%; background:var(--pill-color);}
+
+  /* ===== Section header ===== */
+  .section-head{
+    display:flex; justify-content:space-between; align-items:flex-end; gap:14px;
+    margin:22px 0 16px; flex-wrap:wrap;
+  }
+  .section-head h2{font-size:22px; font-weight:600; color:var(--cat-color);}
+  .section-head .desc{color:var(--muted); font-size:13.5px; margin-top:4px;}
+  .score-badge{
+    font-family:'JetBrains Mono',monospace; font-size:13px; color:var(--text);
+    background:var(--card); border:1px solid var(--border); padding:8px 13px; border-radius:10px;
+    white-space:nowrap;
+  }
+  .reset-btn{
+    background:transparent; border:1px solid var(--border); color:var(--muted);
+    font-size:12px; padding:7px 11px; border-radius:9px; cursor:pointer; font-family:'Inter';
+    margin-left:8px; transition:.15s;
+  }
+  .reset-btn:hover{color:var(--text); border-color:var(--muted2);}
+
+  /* ===== Question card ===== */
+  .qcard{
+    background:var(--card); border:1px solid var(--border); border-radius:16px;
+    padding:18px 18px 16px; margin-bottom:14px;
+  }
+  .qcard .qnum{
+    font-family:'JetBrains Mono',monospace; font-size:11.5px; color:var(--cat-color);
+    letter-spacing:.06em; margin-bottom:6px; display:block;
+  }
+  .qcard .qtext{font-size:15.5px; line-height:1.5; margin-bottom:14px; font-weight:500;}
+  .options{display:flex; flex-direction:column; gap:8px;}
+  .opt{
+    text-align:left; width:100%; background:var(--bg-soft); border:1px solid var(--border);
+    color:var(--text); padding:11px 13px; border-radius:11px; cursor:pointer;
+    font-family:'Inter'; font-size:14px; line-height:1.4;
+    display:flex; gap:10px; align-items:flex-start;
+    transition:border-color .12s ease, background .12s ease;
+  }
+  .opt:hover:not(.locked){border-color:var(--cat-color); background:#171d29;}
+  .opt .tag{
+    font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--muted2);
+    background:var(--border); border-radius:6px; padding:1px 6px; flex:0 0 auto; margin-top:1px;
+  }
+  .opt.correct{border-color:var(--good); background:rgba(61,220,151,0.08);}
+  .opt.correct .tag{background:var(--good); color:#052b1c;}
+  .opt.wrong{border-color:var(--bad); background:rgba(255,107,107,0.08);}
+  .opt.wrong .tag{background:var(--bad); color:#3a0a0a;}
+  .opt.locked{cursor:default;}
+  .opt.dim{opacity:.45;}
+
+  .feedback{
+    margin-top:12px; padding:12px 14px; border-radius:11px; font-size:13.5px; line-height:1.55;
+    display:none; border:1px solid var(--border);
+  }
+  .feedback.show{display:block; animation:fade .25s ease;}
+  .feedback.ok{background:rgba(61,220,151,0.07); border-color:rgba(61,220,151,0.35);}
+  .feedback.no{background:rgba(255,107,107,0.07); border-color:rgba(255,107,107,0.35);}
+  .feedback .lead{font-weight:700; margin-bottom:4px;}
+  .feedback.ok .lead{color:var(--good);}
+  .feedback.no .lead{color:var(--bad);}
+  .feedback .body{color:#c7cede;}
+  @keyframes fade{from{opacity:0; transform:translateY(-3px);} to{opacity:1; transform:none;}}
+
+  footer{max-width:900px; margin:30px auto 0; padding:16px; color:var(--muted2); font-size:12px; text-align:center; border-top:1px solid var(--border);}
+
+  @media (max-width:520px){
+    header.top h1{font-size:22px;}
+    .qcard .qtext{font-size:14.5px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="top">
+    <div class="eyebrow">Guía interactiva de repaso</div>
+    <h1>Simulador <span>EDUCEM</span> · Repaso por materia</h1>
+    <p>13 secciones, más de 180 reactivos tomados de tus simuladores. Responde, revisa la retroalimentación detallada de cada pregunta (aciertos y errores) y sigue tu avance por materia.</p>
+    <div class="stat-row">
+      <div class="stat-chip">Preguntas contestadas <b id="stat-answered">0</b></div>
+      <div class="stat-chip">Aciertos totales <b id="stat-correct">0</b></div>
+      <div class="stat-chip">Precisión <b id="stat-accuracy">—</b></div>
+    </div>
+    <div class="overall-bar"><div id="overall-fill" style="width:0%"></div></div>
+  </header>
+
+  <nav class="cats" id="cat-nav"></nav>
+
+  <section id="section-head" class="section-head"></section>
+  <div id="questions"></div>
+</div>
+
+<footer>Guía generada a partir de tus documentos de simulador (Psicométrico, Examen UASLP y banco de reactivos). Las respuestas correctas siguen las hojas de respuestas originales; algunas explicaciones amplían el razonamiento matemático o conceptual para que entiendas el porqué, no solo el qué.</footer>
+
+<script>
+const DATA = {
+  verbal: { name:"Razonamiento Verbal", color:"#8b5cf6", icon:"🔤",
+    desc:"Analogías: identifica la relación entre el primer par de palabras y aplícala al segundo.",
+    questions:[
+      {q:"Perro es a cachorro como gato es a:", o:["Ratón","Felino","Gatito","León"], c:2, e:"La relación es «animal adulto es a su cría». El cachorro es la cría del perro, por lo tanto la cría del gato es el gatito."},
+      {q:"Libro es a leer como cuchara es a:", o:["Comer","Cocinar","Plato","Tenedor"], c:0, e:"La relación es «objeto es a la acción principal para la que se usa». El libro se usa para leer; la cuchara, para comer."},
+      {q:"Pintor es a pincel como escritor es a:", o:["Libro","Papel","Pluma","Lectura"], c:2, e:"Relación «profesional es a su herramienta característica». El pintor usa el pincel; el escritor, la pluma."},
+      {q:"Ojo es a ver como oído es a:", o:["Escuchar","Hablar","Sonido","Música"], c:0, e:"Relación «órgano es a su función sensorial». El ojo permite ver; el oído, escuchar."},
+      {q:"Invierno es a frío como verano es a:", o:["Sol","Playa","Calor","Vacaciones"], c:2, e:"Relación «estación es a su característica climática». Playa y vacaciones son asociaciones, no la característica del clima en sí; la respuesta directa es calor."},
+      {q:"Árbol es a bosque como estrella es a:", o:["Luna","Galaxia","Cielo","Universo"], c:1, e:"Relación «elemento individual es al conjunto que forma». Los árboles forman un bosque; las estrellas, una galaxia."},
+      {q:"Pez es a agua como ave es a:", o:["Árbol","Nido","Aire","Pluma"], c:2, e:"Relación «ser vivo es a su medio natural de desplazamiento». El pez nada en el agua; el ave vuela en el aire."},
+      {q:"Médico es a hospital como maestro es a:", o:["Alumno","Escuela","Libro","Aula"], c:1, e:"Relación «profesión es a su lugar de trabajo». El médico trabaja en el hospital; el maestro, en la escuela (institución, no el aula específica)."},
+      {q:"Zapato es a pie como guante es a:", o:["Brazo","Mano","Dedo","Muñeca"], c:1, e:"Relación «prenda es a la parte del cuerpo que cubre por completo». El zapato cubre el pie; el guante, la mano."},
+      {q:"Capítulo es a libro como escena es a:", o:["Actor","Teatro","Película","Director"], c:2, e:"Relación «parte es a la obra completa a la que pertenece». Un capítulo forma parte de un libro; una escena, de una película."},
+      {q:"Kilogramo es a peso como litro es a:", o:["Masa","Medida","Volumen","Distancia"], c:2, e:"Relación «unidad es a la magnitud física que mide». El kilogramo mide peso/masa; el litro mide volumen."},
+      {q:"Semilla es a planta como huevo es a:", o:["Nido","Gallina","Pollito","Ave"], c:2, e:"Relación «origen es al ser que se desarrolla de él». La semilla se convierte en planta; el huevo, en pollito."},
+      {q:"Corazón es a sangre como bomba es a:", o:["Agua","Motor","Energía","Electricidad"], c:0, e:"Relación «órgano/máquina es a la sustancia que impulsa». El corazón bombea sangre; una bomba impulsa agua."},
+      {q:"Cirujano es a bisturí como carpintero es a:", o:["Madera","Martillo","Clavo","Sierra"], c:1, e:"Relación «profesional es a su herramienta característica». El cirujano usa el bisturí; el carpintero, el martillo."},
+      {q:"Democracia es a voto como monarquía es a:", o:["Rey","Pueblo","Constitución","Congreso"], c:0, e:"Relación «sistema político es a su figura o mecanismo central». La democracia se ejerce mediante el voto; la monarquía se centra en el rey."},
+      {q:"Amanecer es a día como anochecer es a:", o:["Sol","Noche","Luna","Oscuridad"], c:1, e:"Relación «inicio de un periodo es al periodo que comienza». El amanecer inicia el día; el anochecer inicia la noche."},
+      {q:"Nadar es a agua como volar es a:", o:["Avión","Cielo","Aire","Alas"], c:2, e:"Relación «acción es al medio físico en que se realiza». Se nada en el agua; se vuela en el aire."},
+      {q:"Termómetro es a temperatura como regla es a:", o:["Línea","Medida","Longitud","Distancia"], c:2, e:"Relación «instrumento es a la magnitud que mide». El termómetro mide temperatura; la regla mide longitud."},
+      {q:"Profesor es a enseñar como estudiante es a:", o:["Leer","Escribir","Aprender","Escuchar"], c:2, e:"Relación «persona es a su acción característica en el proceso educativo». El profesor enseña; el estudiante aprende."},
+      {q:"Oxígeno es a respirar como alimento es a:", o:["Comer","Nutrir","Cocinar","Crecer"], c:1, e:"Relación «sustancia es a la función que cumple en el organismo». El oxígeno permite respirar; el alimento nutre (no es solo «comer», que es la acción, no la función)."}
+    ]
+  },
+
+  logico: { name:"Razonamiento Lógico", color:"#22d3ee", icon:"🧩",
+    desc:"Series numéricas y alfabéticas: descubre el patrón (suma, multiplicación, saltos) y complétalo.",
+    questions:[
+      {q:"A, C, E, G, __", o:["H","I","J","K"], c:1, e:"La serie salta una letra cada vez (avanza 2 posiciones): A(+2)C(+2)E(+2)G(+2)I."},
+      {q:"2, 4, 8, 16, __", o:["24","30","32","36"], c:2, e:"Progresión geométrica de razón 2: cada término se multiplica por 2. 16×2=32."},
+      {q:"Z, X, V, T, __", o:["R","S","Q","P"], c:0, e:"La serie retrocede 2 letras cada vez: Z(-2)X(-2)V(-2)T(-2)R."},
+      {q:"1, 4, 9, 16, __", o:["20","24","25","36"], c:2, e:"Son cuadrados perfectos consecutivos: 1², 2², 3², 4², 5²=25."},
+      {q:"B, E, H, K, __", o:["M","N","O","P"], c:1, e:"Cada letra avanza 3 posiciones en el alfabeto: B(+3)E(+3)H(+3)K(+3)N."},
+      {q:"3, 6, 12, 24, __", o:["36","42","48","96"], c:2, e:"Cada término se duplica: 3,6,12,24,48."},
+      {q:"A, D, G, J, __", o:["K","L","M","N"], c:2, e:"Cada letra avanza 3 posiciones: A(+3)D(+3)G(+3)J(+3)M."},
+      {q:"64, 32, 16, 8, __", o:["6","4","2","1"], c:1, e:"Cada término se divide entre 2: 64,32,16,8,4."},
+      {q:"M, N, P, Q, S, T, __", o:["U","V","W","X"], c:1, e:"Las letras avanzan en parejas consecutivas saltándose una letra entre cada par: MN, (salta O) PQ, (salta R) ST, (salta U) V."},
+      {q:"5, 10, 20, 40, __", o:["60","70","80","90"], c:2, e:"Cada término se duplica: 5,10,20,40,80."},
+      {q:"A, 1, C, 4, E, 9, G, __", o:["12","14","16","25"], c:2, e:"Dos series intercaladas: las letras saltan una (A,C,E,G) y los números son cuadrados perfectos (1²,2²,3²,4²=16)."},
+      {q:"2, A, 4, C, 6, E, 8, __", o:["F","G","H","I"], c:1, e:"Dos series intercaladas: los números pares (2,4,6,8) y las letras que saltan una (A,C,E,G); sigue la letra G."},
+      {q:"100, 90, 81, 73, __", o:["65","66","67","68"], c:1, e:"La diferencia entre términos disminuye de 1 en 1 (-10,-9,-8,-7): 100-10=90, 90-9=81, 81-8=73, 73-7=66."},
+      {q:"AA, CC, EE, GG, __", o:["HH","II","JJ","KK"], c:1, e:"Las letras dobles saltan una letra cada vez: AA,CC,EE,GG,II."},
+      {q:"1, 3, 2, 6, 3, 9, 4, __", o:["10","12","15","16"], c:1, e:"El patrón alterna un número entero creciente (1,2,3,4) con su triple (n×3): 1-3, 2-6, 3-9, 4-12."},
+      {q:"C, F, J, O, U, __", o:["Z","B","C","D"], c:0, e:"La distancia entre letras aumenta progresivamente (+3,+4,+5,+6...); siguiendo ese patrón la serie llega hasta la letra Z."},
+      {q:"1, 2, 6, 24, 120, __", o:["240","360","720","840"], c:2, e:"Es la sucesión de factoriales: 1!,2!,3!,4!,5!; el siguiente término es 6! = 720."},
+      {q:"A, Z, B, Y, C, X, D, __", o:["W","V","U","T"], c:0, e:"Se alternan dos series: una que avanza desde el inicio del alfabeto (A,B,C,D) y otra que retrocede desde el final (Z,Y,X,W)."},
+      {q:"7, 14, 28, 56, __", o:["98","112","124","128"], c:1, e:"Cada término se duplica: 7,14,28,56,112."},
+      {q:"B, D, H, P, __", o:["R","T","X","F"], c:3, e:"La diferencia entre las posiciones de las letras se duplica cada vez (+2,+4,+8,+16): B(2),D(4),H(8),P(16); 16+16=32, y 32-26=posición 6 del alfabeto = F."}
+    ]
+  },
+
+  espacial: { name:"Razonamiento Espacial", color:"#f59e0b", icon:"📐",
+    desc:"Cubos, desarrollos planos, rotaciones y simetría — visualiza en tres dimensiones.",
+    questions:[
+      {q:"Un cubo se desarrolla en una cruz estándar: una fila horizontal con las casillas Y, Z, W, V (en ese orden) representa las caras Izquierda, Frente, Derecha y Atrás; arriba de Z está la casilla X (cara de Arriba) y abajo de Z está la casilla U (cara de Abajo). Al armar el cubo, ¿qué casilla queda en la cara opuesta a Z?", o:["X","Y","V","W"], c:2, e:"En un desarrollo en cruz, la cara del Frente (Z) siempre queda opuesta a la cara de Atrás (V), que es la última casilla de la fila horizontal."},
+      {q:"Con el mismo desarrollo (Y, Z, W, V en fila; X arriba de Z; U abajo de Z), ¿qué casilla es opuesta a Y?", o:["W","X","U","Z"], c:0, e:"En la fila horizontal Izquierda-Frente-Derecha-Atrás, la cara Izquierda (Y) siempre queda opuesta a la cara Derecha (W)."},
+      {q:"Con el mismo desarrollo, ¿qué casilla es opuesta a la casilla superior X?", o:["U","Y","Z","V"], c:0, e:"La cara de Arriba (X) siempre es opuesta a la cara de Abajo (U) en un cubo, sin importar la orientación de la fila horizontal."},
+      {q:"En un dado estándar, las caras opuestas siempre suman 7. Si una cara visible muestra 5 puntos, ¿cuántos puntos tiene la cara opuesta (no visible)?", o:["1","2","3","4"], c:1, e:"Como las caras opuestas suman 7, la cara contraria a la que muestra 5 puntos debe tener 7-5=2 puntos."},
+      {q:"Se lanzan dos dados estándar. La suma total de los puntos de las 12 caras de ambos dados (del 1 al 6, dos veces) es siempre 42. Si en una imagen las caras visibles suman 26 puntos, ¿cuántos puntos corresponden a las caras que no se ven?", o:["13","14","15","16"], c:3, e:"El total fijo de puntos en dos dados es 21+21=42. Si lo visible suma 26, lo no visible es 42-26=16 puntos."},
+      {q:"Una escalera de cubos tiene 5 escalones: el primero usa 1 cubo, el segundo 2, el tercero 3, el cuarto 4 y el quinto 5 cubos apilados. ¿Cuántos cubos se necesitan en total?", o:["10","12","15","20"], c:2, e:"Es la suma de los primeros 5 números naturales: 1+2+3+4+5=15 cubos."},
+      {q:"Un cubo sólido está formado por 4×4×4 = 64 cubitos pequeños. Si ya se colocaron 45 cubitos, ¿cuántos cubitos faltan como mínimo para completar el cubo?", o:["17","18","19","21"], c:2, e:"El total del cubo completo es 64 cubitos; si ya hay 45, faltan 64-45=19 cubitos."},
+      {q:"¿Cuál de las siguientes figuras NO puede doblarse para formar un cubo?", o:["Una cruz latina de 6 cuadrados","Una fila recta de 6 cuadrados en línea","Una forma de «T» de 6 cuadrados","Una cruz griega de 6 cuadrados"], c:1, e:"Una fila recta de 6 cuadrados, al doblarse, hace que dos caras terminen superpuestas en el mismo lugar y deje otra cara sin cubrir, por lo que no forma un cubo válido; las otras opciones sí son desarrollos planos válidos."},
+      {q:"Si giras un cubo 90° en sentido horario (visto desde arriba) sobre su eje vertical, ¿dónde queda la cara que antes estaba al frente?", o:["Arriba","Atrás","A la izquierda","A la derecha"], c:2, e:"Al girar 90° en sentido horario visto desde arriba, la cara Derecha pasa a Frente, la Frontal pasa a Izquierda, la Izquierda pasa a Atrás y la de Atrás pasa a Derecha."},
+      {q:"Si observas la letra «b» reflejada en un espejo vertical, ¿qué letra parece formarse?", o:["p","d","q","b"], c:1, e:"Un espejo vertical invierte la figura horizontalmente; la curva de la «b» (a la derecha del trazo) queda ahora a la izquierda, formando una «d»."}
+    ]
+  },
+
+  socio: { name:"Habilidades Socioemocionales", color:"#f472b6", icon:"🤝",
+    desc:"Escenarios de convivencia escolar: identifica la respuesta más empática, asertiva o autorregulada.",
+    questions:[
+      {q:"Durante un trabajo en equipo, un compañero está muy callado y no participa; algunos lo empiezan a ignorar. ¿Qué es lo más adecuado?", o:["Ignorarlo también para evitar retrasos","Preguntarle si desea compartir alguna idea y darle espacio para participar","Hacer todo el trabajo sin tomarlo en cuenta","Decirle frente al grupo que debe participar más"], c:1, e:"La opción correcta fomenta la inclusión y la escucha activa sin exponer ni excluir a la persona. Ignorarlo (A, C) o señalarlo en público (D) daña la dinámica del equipo."},
+      {q:"Un profesor critica tu proyecto con tono respetuoso, pero te sientes decepcionada porque dedicaste mucho esfuerzo. ¿Cuál es la respuesta más adecuada?", o:["Enojarte y dejar de escuchar","Defenderte sin permitir comentarios","Escuchar la retroalimentación y usarla para mejorar","Abandonar el proyecto"], c:2, e:"La autorregulación emocional implica procesar la crítica constructiva sin reaccionar a la defensiva ni rendirse; usarla para mejorar es la respuesta madura."},
+      {q:"Dos amigas discuten y ambas te piden que tomes partido. ¿Qué sería lo más apropiado?", o:["Elegir a la amiga más cercana","Evitar hablar con ambas","Escuchar a las dos antes de emitir una opinión","Contarles a otros compañeros sobre el conflicto"], c:2, e:"La imparcialidad y la escucha activa de ambas partes evitan tomar partido prematuramente o alimentar el conflicto."},
+      {q:"Recibes una calificación menor a la esperada en un examen importante. ¿Qué acción refleja mejor una adecuada autorregulación emocional?", o:["Pensar que nunca podrás mejorar","Analizar los errores y preparar un plan de estudio","Compararte negativamente con otros","Dejar de presentar exámenes"], c:1, e:"La autorregulación saludable convierte la frustración inicial en una acción concreta y constructiva, no en autocrítica destructiva ni evasión."},
+      {q:"En una exposición, un compañero se equivoca y algunos estudiantes se ríen. ¿Cuál sería la reacción más empática?", o:["Unirte a las risas","Ignorar la situación","Mostrar apoyo y permitir que continúe","Recordarle después su error varias veces"], c:2, e:"La empatía implica solidarizarte con quien pasa por un momento difícil en lugar de sumarte a la burla o ser indiferente."},
+      {q:"Tu equipo tiene opiniones muy diferentes sobre cómo resolver un problema. ¿Qué conducta favorece mejor la colaboración?", o:["Imponer tu idea porque crees que es la mejor","Escuchar las propuestas y evaluar ventajas y desventajas","Retirarte de la discusión","Votar inmediatamente sin escuchar argumentos"], c:1, e:"La colaboración efectiva requiere considerar y ponderar todas las ideas antes de decidir, en vez de imponer, evadir o decidir sin análisis."},
+      {q:"Una amiga parece triste y distante durante varios días. ¿Qué sería lo más adecuado?", o:["Asumir que está molesta contigo","Preguntarle con respeto si necesita apoyo","Ignorar la situación","Hablar sobre ella con otras personas"], c:1, e:"Acercarte con respeto, sin dar por hecho la causa, es la forma empática y directa de ofrecer apoyo genuino."},
+      {q:"Durante una competencia escolar, otro participante obtiene mejores resultados que tú. ¿Cuál demuestra una actitud emocionalmente saludable?", o:["Sentir resentimiento","Descalificar sus logros","Reconocer su esfuerzo y seguir mejorando","Renunciar a futuras competencias"], c:2, e:"La regulación emocional saludable valora el logro ajeno con deportividad y usa la experiencia como motivación para mejorar, sin resentimiento ni renuncia."},
+      {q:"Tu grupo recibió una tarea difícil y algunos compañeros se sienten frustrados. ¿Qué acción ayudaría más al equipo?", o:["Quejarse constantemente","Dividir responsabilidades y apoyarse mutuamente","Esperar a que alguien más la haga","Culpar al profesor"], c:1, e:"El trabajo colaborativo estructurado —dividir tareas y apoyarse— reduce la frustración y mejora el desempeño, a diferencia de quejarse, evadir o culpar."},
+      {q:"Un compañero interpreta mal un comentario tuyo y se molesta. ¿Cuál es la mejor forma de manejar la situación?", o:["Ignorarlo","Responder con enojo","Aclarar tus intenciones y escuchar cómo se sintió","Hablar mal de él con otros compañeros"], c:2, e:"La comunicación asertiva resuelve malentendidos aclarando la intención propia y validando la emoción del otro, sin agresión ni evasión."}
+    ]
+  },
+
+  critico: { name:"Pensamiento Crítico", color:"#34d399", icon:"🔎",
+    desc:"Detecta falacias, sesgos de muestra y conclusiones apresuradas en afirmaciones cotidianas.",
+    questions:[
+      {q:"Una noticia afirma: «Los estudiantes que desayunan obtienen mejores calificaciones, por lo tanto desayunar garantiza el éxito académico.» ¿Cuál es la mejor respuesta crítica?", o:["La conclusión es correcta porque existe una relación entre ambas variables","El desayuno puede influir, pero también intervienen otros factores como hábitos de estudio o sueño","Si algunos estudiantes tienen buenas calificaciones, todos deberían desayunar exactamente lo mismo","No es necesario analizar más la información"], c:1, e:"Identifica la falacia de causa única: una correlación no prueba que un solo factor «garantice» el resultado; existen múltiples variables involucradas."},
+      {q:"Una empresa anuncia: «9 de cada 10 personas prefieren nuestro producto.» ¿Qué información sería más importante conocer?", o:["El color del anuncio","Cuánto costó la publicidad","Cómo se seleccionó la muestra de personas encuestadas","El nombre del diseñador"], c:2, e:"Sin conocer el método de muestreo, la estadística puede estar sesgada (por ejemplo, encuestar solo a clientes leales); es el dato clave para evaluar la validez del anuncio."},
+      {q:"Un artículo afirma: «Desde que se instaló una biblioteca disminuyeron los delitos, por lo tanto la biblioteca causó la reducción.» ¿Cuál es la mejor observación crítica?", o:["La relación temporal no demuestra causalidad","Toda biblioteca reduce automáticamente los delitos","La afirmación debe aceptarse sin cuestionar","La biblioteca no puede tener ningún efecto positivo"], c:0, e:"Es un ejemplo clásico de la falacia «correlación no implica causalidad» (post hoc): que un evento siga a otro no prueba que lo haya causado."},
+      {q:"Un estudiante dice: «Mi abuelo fumó toda su vida y vivió muchos años, entonces fumar no afecta la salud.» ¿Cuál es el principal problema del argumento?", o:["Utiliza un caso aislado para sacar una conclusión general","Presenta demasiada evidencia científica","Usa datos estadísticos","Compara dos estudios"], c:0, e:"Generalizar a partir de una sola anécdota, ignorando la evidencia estadística amplia sobre el tabaquismo, es una falacia de generalización apresurada."},
+      {q:"Una investigación encuentra que quienes leen más libros suelen tener mayor vocabulario. ¿Cuál es la conclusión más razonable?", o:["Leer podría contribuir al desarrollo del vocabulario","Leer garantiza inteligencia superior","Todas las personas lectoras tienen exactamente el mismo vocabulario","Los libros son la única fuente de aprendizaje"], c:0, e:"La conclusión razonable reconoce una posible relación (correlación) sin afirmar causalidad absoluta ni generalizar en exceso."},
+      {q:"Una publicación en redes sociales asegura: «Este remedio natural cura cualquier enfermedad.» ¿Cuál debería ser tu primera reacción?", o:["Compartirlo inmediatamente","Buscar evidencia científica confiable que respalde la afirmación","Comprar el producto","Recomendarlo a familiares"], c:1, e:"El pensamiento crítico exige verificar afirmaciones extraordinarias con fuentes confiables antes de creerlas, comprarlas o difundirlas."},
+      {q:"Una escuela reporta que aumentó el promedio general después de implementar tutorías. ¿Qué pregunta ayudaría más a evaluar la afirmación?", o:["¿Qué color tienen las aulas?","¿Existieron otros cambios al mismo tiempo que pudieran explicar la mejora?","¿Cuántas ventanas hay en la escuela?","¿Quién diseñó el logotipo escolar?"], c:1, e:"Se busca descartar variables de confusión (otros cambios simultáneos) antes de atribuir la mejora únicamente a las tutorías."},
+      {q:"Una encuesta en internet concluye: «Todos los jóvenes piensan igual sobre este tema.» ¿Qué crítica es más válida?", o:["Una encuesta puede no representar a toda la población juvenil","Las encuestas siempre son incorrectas","Los jóvenes nunca participan en encuestas","Toda opinión es idéntica"], c:0, e:"Cuestiona la representatividad de la muestra: una encuesta en internet no aleatoria no puede generalizarse a «todos los jóvenes»."},
+      {q:"Un medio publica: «Las ventas aumentaron un 100% este mes.» ¿Qué dato adicional sería más útil?", o:["El nombre del gerente","La cantidad inicial de ventas antes del aumento","El diseño del producto","El tamaño de las oficinas"], c:1, e:"Sin el valor base, un porcentaje puede ser engañoso: pasar de 1 a 2 ventas también es un aumento del 100%, pero el impacto real es muy distinto."},
+      {q:"Un estudiante afirma: «Todos mis amigos usan esta técnica de estudio y les funciona, por lo tanto es la mejor para todas las personas.» ¿Cuál es la mejor evaluación crítica?", o:["La experiencia de un grupo pequeño no basta para generalizar a toda la población","La técnica funciona igual para todos","No es necesario investigar más","Las opiniones personales son pruebas definitivas"], c:0, e:"Es una generalización apresurada: una muestra reducida y no representativa (un grupo de amigos) no permite concluir que algo sea universalmente válido."}
+    ]
+  },
+
+  quimica: { name:"Química", color:"#60a5fa", icon:"⚗️",
+    desc:"Método científico, estructura atómica, tabla periódica, enlaces y reacciones.",
+    questions:[
+      {q:"¿Cuál opción describe una relación interdisciplinaria directa entre la Química y la Arqueología?", o:["El cálculo de la velocidad de caída de un cuerpo antiguo","La datación de fósiles mediante el análisis del isótopo carbono-14","El estudio filogenético del ADN de poblaciones extintas","La descripción literaria de las costumbres de una civilización"], c:1, e:"La datación radiométrica con carbono-14 es una aplicación química directa (decaimiento isotópico) que la arqueología usa para fechar restos orgánicos."},
+      {q:"¿Cuál enunciado define correctamente la ley de conservación de la masa de Lavoisier?", o:["La masa de los reactivos es siempre mayor que la de los productos por la liberación de energía","En una reacción química, la masa total de las sustancias reactivas es igual a la masa total de los productos obtenidos","El volumen gaseoso de los reactantes es proporcional al volumen de los productos","Los elementos se combinan en proporciones de números enteros sencillos"], c:1, e:"La ley establece que la materia no se crea ni se destruye en una reacción química, solo se transforma; la masa total se conserva."},
+      {q:"Un científico observa que una sustancia brilla y propone que se debe a una reacción con el oxígeno del aire. ¿A qué etapa del método científico corresponde esta suposición?", o:["Observación","Hipótesis","Experimentación","Conclusión"], c:1, e:"Una suposición lógica que aún debe comprobarse experimentalmente corresponde a la etapa de hipótesis, posterior a la observación."},
+      {q:"¿Cuál opción clasifica correctamente a una muestra de aire puro y seco?", o:["Sustancia pura - Elemento","Sustancia pura - Compuesto","Mezcla homogénea","Mezcla heterogénea"], c:2, e:"El aire es una mezcla de gases (N₂, O₂, Ar...) distribuidos uniformemente; al no poder distinguirse a simple vista sus componentes, es una mezcla homogénea."},
+      {q:"¿Cuál de los siguientes ejemplos corresponde a una propiedad extensiva de la materia?", o:["Densidad","Punto de ebullición","Masa","Solubilidad"], c:2, e:"Las propiedades extensivas dependen de la cantidad de materia presente (masa, volumen); densidad, punto de ebullición y solubilidad son propiedades intensivas."},
+      {q:"Cuando el hielo seco pasa directamente al estado gaseoso sin pasar por líquido, el cambio de estado se llama:", o:["Evaporación","Fusión","Sublimación","Deposición"], c:2, e:"El paso directo de sólido a gas, sin fase líquida intermedia, se denomina sublimación (el proceso inverso es deposición)."},
+      {q:"En el experimento de Rutherford, ¿qué observación crucial le permitió concluir que el átomo posee un núcleo denso y positivo?", o:["Todas las partículas alfa atravesaron la lámina sin desviación","La mayoría de las partículas rebotaron en 180 grados exactos","La mayoría atravesaron la lámina, pero una pequeña fracción se desvió con ángulos grandes o rebotó","Las partículas alfa se transformaron en electrones"], c:2, e:"Este resultado inesperado (una minoría rebotó) reveló que el átomo tiene un núcleo pequeño, denso y con carga positiva, rodeado de espacio prácticamente vacío."},
+      {q:"Un átomo neutro tiene Z=15 y A=31. ¿Cuál es su composición de partículas subatómicas?", o:["15 protones, 15 electrones y 16 neutrones","16 protones, 15 electrones y 15 neutrones","15 protones, 16 electrones y 15 neutrones","31 protones, 15 electrones y 16 neutrones"], c:0, e:"En un átomo neutro, protones = electrones = Z = 15. Los neutrones se calculan como A−Z = 31−15 = 16."},
+      {q:"¿En qué se diferencia un átomo de yodo-131 de uno de yodo-127 estable?", o:["El yodo-131 tiene más protones en su núcleo","El yodo-131 tiene más electrones en sus orbitales externos","El yodo-131 tiene 4 neutrones más en su núcleo","El yodo-131 pertenece a un grupo diferente en la tabla periódica"], c:2, e:"Son isótopos del mismo elemento (mismo Z=53, mismos protones); solo difieren en el número de neutrones: 131−127 = 4 neutrones adicionales."},
+      {q:"¿Cuál es la configuración electrónica correcta en el estado basal para el Azufre (Z=16)?", o:["1s² 2s² 2p⁶ 3s² 3p²","1s² 2s² 2p⁶ 3s² 3p⁴","1s² 2s² 2p⁶ 3s¹ 3p⁵","1s² 2s² 2p⁴ 3s² 3p⁶"], c:1, e:"Se llenan los orbitales en orden de energía creciente hasta completar los 16 electrones: 2+2+6+2+4=16, terminando en 3p⁴."},
+      {q:"¿Qué tipo de enlace se forma cuando ocurre una transferencia completa de electrones desde un átomo metálico hacia uno no metálico?", o:["Enlace covalente no polar","Enlace covalente polar","Enlace iónico","Enlace metálico"], c:2, e:"La transferencia completa de electrones entre un metal (baja electronegatividad) y un no metal (alta electronegatividad) forma un enlace iónico, no una compartición de electrones."},
+      {q:"Para balancear la combustión del metano CH₄ + O₂ → CO₂ + H₂O, ¿cuáles son los coeficientes correctos?", o:["1, 1, 1, 1","1, 2, 1, 2","1, 2, 2, 1","2, 2, 1, 2"], c:1, e:"CH₄ + 2O₂ → CO₂ + 2H₂O: así se igualan 1 C, 4 H y 4 O en ambos lados de la ecuación."},
+      {q:"J.J. Thomson demostró la existencia de partículas con carga negativa mediante rayos catódicos. ¿Qué modelo atómico propuso?", o:["El modelo de la esfera sólida e indivisible","El modelo del budín de pasas","El modelo planetario con órbitas circulares cuantizadas","El modelo de nube de probabilidad electrónica"], c:1, e:"Thomson propuso que el átomo era una esfera de carga positiva con electrones incrustados, como pasas en un budín, antes del descubrimiento del núcleo."},
+      {q:"Cuando un átomo neutro pierde uno o más electrones, el ion resultante se clasifica como:", o:["Anión","Isótopo","Catión","Molécula polar"], c:2, e:"Al perder electrones, el átomo queda con carga positiva neta: se convierte en un catión (el anión se forma al ganar electrones)."},
+      {q:"¿Qué elemento entre las siguientes opciones tiene la energía de ionización más alta?", o:["Sodio (Na)","Flúor (F)","Cesio (Cs)","Aluminio (Al)"], c:1, e:"La energía de ionización aumenta hacia la derecha y hacia arriba en la tabla periódica; el flúor, un no metal pequeño, la tiene más alta entre estas opciones."},
+      {q:"¿Cuál elemento es un metaloide ampliamente usado en la industria de los semiconductores y microchips?", o:["Hierro (Fe)","Silicio (Si)","Oxígeno (O)","Mercurio (Hg)"], c:1, e:"El silicio, con comportamiento intermedio entre metal y no metal, es la base de la industria de semiconductores por su conductividad controlable."}
+    ]
+  },
+
+  biologia: { name:"Biología", color:"#a3e635", icon:"🧬",
+    desc:"Célula, genética, evolución, anatomía humana y niveles de organización biológica.",
+    questions:[
+      {q:"¿Cuál es la función principal del ARN mensajero (ARNm) en la síntesis de proteínas?", o:["Transportar los aminoácidos hacia el ribosoma","Llevar la información genética copiada del ADN desde el núcleo hacia los ribosomas","Formar la estructura física y catalítica de los ribosomas","Unir de forma covalente los fragmentos de Okazaki"], c:1, e:"El ARNm transcribe la información del ADN en el núcleo y la transporta a los ribosomas, donde se traduce en proteínas; el ARNt es el que transporta aminoácidos."},
+      {q:"¿En qué fase de la mitosis los cromosomas duplicados se alinean en el plano ecuatorial de la célula?", o:["Profase","Anafase","Metafase","Telofase"], c:2, e:"En metafase los cromosomas se alinean en el plano ecuatorial, justo antes de separarse hacia los polos en anafase."},
+      {q:"¿Qué proceso celular produce cuatro células hijas haploides genéticamente distintas a la célula madre?", o:["Mitosis","Fisión binaria","Meiosis","Esporulación"], c:2, e:"La meiosis produce 4 células haploides genéticamente distintas (recombinación), a diferencia de la mitosis, que produce 2 células diploides idénticas."},
+      {q:"Al cruzar Aa × Aa con dominancia completa, ¿cuál es la proporción fenotípica esperada en la descendencia?", o:["1:2:1","3:1","9:3:3:1","1:1"], c:1, e:"El cruce de dos heterocigotos para un carácter con dominancia completa produce una proporción fenotípica 3:1 (dominante:recesivo), según la primera ley de Mendel."},
+      {q:"¿Cómo se conoce a la herencia donde el heterocigoto muestra un fenotipo intermedio exacto entre los dos homocigotos?", o:["Codominancia","Dominancia incompleta","Alelos múltiples","Herencia ligada al sexo"], c:1, e:"En la dominancia incompleta el fenotipo del heterocigoto es una mezcla intermedia (por ejemplo, flores rosas de padres rojos y blancos); en la codominancia ambos alelos se expresan por separado y simultáneamente."},
+      {q:"Cuando una población se divide por una barrera geográfica y evoluciona hasta formar especies distintas, ¿qué tipo de especiación ocurrió?", o:["Especiación simpátrica","Especiación alopátrica","Especiación instantánea artificial","Hibridación selectiva"], c:1, e:"La separación por una barrera física (cordillera, río) que lleva a divergencia evolutiva independiente se llama especiación alopátrica."},
+      {q:"¿Qué capa de la piel humana es la más externa, es avascular y está formada por células queratinizadas?", o:["Dermis","Hipodermis","Epidermis","Capa muscular lisa"], c:2, e:"La epidermis es la capa más externa de la piel; carece de vasos sanguíneos propios y está formada por estratos de células queratinizadas."},
+      {q:"¿Cuál es la unidad estructural y funcional del riñón que realiza ultrafiltración, reabsorción y secreción?", o:["Neurona","Nefrona","Alvéolo","Hepatocito"], c:1, e:"La nefrona es la unidad funcional del riñón encargada de filtrar la sangre y formar la orina."},
+      {q:"¿Qué división del sistema nervioso está integrada exclusivamente por el encéfalo y la médula espinal?", o:["Sistema Nervioso Periférico (SNP)","Sistema Nervioso Central (SNC)","Sistema Nervioso Autónomo (SNA)","Sistema Nervioso Somático"], c:1, e:"El SNC está compuesto exclusivamente por el encéfalo y la médula espinal; el resto de nervios y ganglios pertenecen al SNP."},
+      {q:"¿Cuáles son los órganos encargados de producir espermatozoides y secretar testosterona?", o:["Próstata","Conductos deferentes","Testículos","Vesículas seminales"], c:2, e:"Los testículos son las gónadas masculinas: producen espermatozoides y secretan la hormona testosterona."},
+      {q:"¿Cómo se define la capacidad de un organismo de mantener un ambiente interno estable pese a cambios externos?", o:["Homeostasis","Metabolismo","Irritabilidad","Evolución"], c:0, e:"La homeostasis es la capacidad de regular y mantener constantes las condiciones internas (temperatura, pH, etc.) frente a los cambios del entorno."},
+      {q:"Los experimentos de Louis Pasteur con matraces de cuello de cisne ayudaron a refutar definitivamente la teoría de:", o:["La evolución química","La panspermia","La generación espontánea","La endosimbiosis"], c:2, e:"Pasteur demostró que microorganismos no surgían espontáneamente de materia inerte, sino que provenían de otros microorganismos, refutando la generación espontánea."},
+      {q:"La teoría endosimbiótica propone que ciertos orgánulos eucariotas evolucionaron de bacterias simbióticas libres. ¿Cuáles son estos orgánulos?", o:["Mitocondrias y cloroplastos","Ribosomas y lisosomas","Aparato de Golgi y retículo endoplásmico","Vacuolas y centriolos"], c:0, e:"La teoría endosimbiótica propone que mitocondrias y cloroplastos evolucionaron de bacterias que fueron englobadas por células ancestrales, apoyada por su ADN propio."},
+      {q:"¿Cuál es la principal molécula portadora de energía («moneda energética») usada por las células?", o:["Glucosa","ATP (Trifosfato de adenosina)","ADN","Enzimas"], c:1, e:"El ATP es la molécula que las células usan directamente para realizar trabajo celular; la glucosa es una fuente de energía que se transforma en ATP."},
+      {q:"¿Qué científico propuso el sistema de clasificación de los tres dominios (Archaea, Bacteria y Eukarya) basándose en el ARN ribosomal?", o:["Carl Woese","Robert Whittaker","Carlos Linneo","Charles Darwin"], c:0, e:"Carl Woese propuso el sistema de tres dominios en 1977 al analizar diferencias en la secuencia del ARN ribosomal, revelando que Archaea es un dominio distinto de Bacteria."},
+      {q:"Durante la replicación del ADN, ¿cuál es la función de la enzima ADN polimerasa?", o:["Desenrollar la doble hélice de ADN","Unir los fragmentos de Okazaki en la cadena rezagada","Sintetizar la nueva cadena complementaria añadiendo nucleótidos libres","Romper los puentes de hidrógeno entre las bases"], c:2, e:"La ADN polimerasa añade nucleótidos complementarios a la cadena molde para construir la nueva hebra; desenrollar es función de la helicasa y unir fragmentos, de la ligasa."}
+    ]
+  },
+
+  espanol: { name:"Español", color:"#fb923c", icon:"📚",
+    desc:"Etimología, tipología textual, géneros literarios y funciones del lenguaje.",
+    questions:[
+      {q:"¿A qué familia lingüística pertenece el español por su origen histórico y conexiones con lenguas antiguas de Europa y Asia?", o:["Familia semítica","Familia indoeuropea","Familia camítica","Familia uralo-altaica"], c:1, e:"El español desciende del latín, que forma parte de la familia de lenguas indoeuropeas, la más extendida en Europa y parte de Asia."},
+      {q:"¿Cómo se conocen las palabras del español que provienen directamente de la evolución del latín hablado por el pueblo?", o:["Cultismos","Voces patrimoniales (romances)","Helenismos","Neologismos"], c:1, e:"Las voces patrimoniales evolucionaron naturalmente del latín vulgar; los cultismos, en cambio, se tomaron directamente del latín culto sin sufrir esa evolución fonética."},
+      {q:"¿Qué significa el prefijo de origen griego «peri-», presente en «perímetro» o «pericardio»?", o:["Dentro de","Alrededor de","Debajo de","Más allá de"], c:1, e:"«Peri-» significa «alrededor de»: el perímetro es la medida alrededor de una figura; el pericardio, la membrana alrededor del corazón."},
+      {q:"¿Qué tipo de prototipo textual tiene como objetivo defender una opinión o tesis mediante razones para convencer al receptor?", o:["Narración","Descripción","Argumentación","Diálogo"], c:2, e:"El prototipo argumentativo busca persuadir presentando razones y evidencias que sustenten una tesis, a diferencia de narrar o describir."},
+      {q:"¿Qué tipo de texto periodístico combina la exposición de un hecho de actualidad con la opinión personal y el estilo literario del autor que lo firma?", o:["Noticia o nota informativa","Crónica","Reportaje técnico","Columna"], c:3, e:"La columna combina información de actualidad con la opinión y el estilo personal del autor, quien la firma y en ella expresa su punto de vista."},
+      {q:"¿Cuál es el significado de la raíz griega «fobia», usada en términos médicos y psicológicos?", o:["Amor o inclinación","Temor o miedo irracional","Estudio o tratado","Dolor o inflamación"], c:1, e:"La raíz «fobia» significa temor o miedo irracional, como en «claustrofobia» (miedo a los espacios cerrados)."},
+      {q:"¿Qué significa la locución latina «grosso modo»?", o:["Con todo detalle","A grandes rasgos o aproximadamente","De la misma manera","Por derecho propio"], c:1, e:"«Grosso modo» significa «de manera aproximada o general», sin entrar en detalles específicos."},
+      {q:"¿Qué función de la lengua predomina en los textos expositivos, cuyo objetivo es transmitir conocimientos de forma objetiva?", o:["Función apelativa","Función poética","Función referencial","Función emotiva"], c:2, e:"Los textos expositivos priorizan la función referencial (o informativa) del lenguaje: comunicar datos de forma objetiva y clara."},
+      {q:"Las lenguas que nacieron de la fragmentación y evolución del latín vulgar se denominan lenguas:", o:["Anglosajonas","Romances","Germánicas","Semíticas"], c:1, e:"El español, el francés, el italiano y el portugués, entre otras, evolucionaron del latín vulgar y por eso se llaman lenguas romances."},
+      {q:"¿Qué característica interna de los textos se cumple cuando las ideas están organizadas de forma lógica en torno a un tema central?", o:["Cohesión","Adecuación","Coherencia","Tipografía"], c:2, e:"La coherencia es la propiedad textual que organiza las ideas de manera lógica alrededor de un tema central, haciendo comprensible el texto en su conjunto."},
+      {q:"¿Qué texto funcional resume los datos personales, académicos y profesionales de un candidato a un empleo?", o:["Carta de petición","Currículum vitae","Cuadro sinóptico","Oficio institucional"], c:1, e:"El currículum vitae es el texto funcional estandarizado para presentar la formación y experiencia de una persona ante un posible empleador."},
+      {q:"¿Qué composiciones rimadas y jocosas se usan en México para burlarse de la muerte en fechas festivas?", o:["Refranes","Chistes","Calaveritas literarias","Adivinanzas"], c:2, e:"Las calaveritas literarias son textos recreativos rimados y humorísticos, típicos del Día de Muertos, que satirizan a personajes vivos o históricos."},
+      {q:"En los textos dramáticos, ¿cómo se llaman las indicaciones entre paréntesis sobre acciones, gestos o vestuario de los actores?", o:["Diálogos","Monólogos","Acotaciones","Escenas"], c:2, e:"Las acotaciones son las indicaciones escénicas que el autor incluye entre paréntesis para guiar la puesta en escena, sin ser parte del diálogo hablado."},
+      {q:"Cuando un poema solo coincide en los sonidos de las vocales desde la última sílaba tónica, ¿qué tipo de rima tiene?", o:["Rima consonante","Rima asonante","Rima blanca","Rima libre"], c:1, e:"La rima asonante coincide únicamente en las vocales; la consonante coincide en todos los sonidos (vocales y consonantes) desde la última sílaba tónica."},
+      {q:"¿Qué subgénero persuasivo es un texto en prosa donde el autor analiza un tema con enfoque personal, riguroso y argumentado?", o:["Caricatura","Ensayo","Historieta","Noticia"], c:1, e:"El ensayo es un texto argumentativo en prosa donde el autor interpreta y evalúa un tema desde una perspectiva propia, con rigor y argumentos."},
+      {q:"¿Qué subgénero lírico se caracteriza por ser una composición de tono elevado destinada a celebrar o alabar algo o a alguien?", o:["Elegía","Oda","Sátira","Madrigal"], c:1, e:"La oda es una composición poética solemne que celebra o exalta a una persona, objeto o valor; la elegía, en cambio, expresa duelo o lamento."}
+    ]
+  },
+
+  mategeo: { name:"Matemáticas: Geometría Analítica y Trigonometría", color:"#38bdf8", icon:"📏",
+    desc:"Cónicas (parábola, elipse, circunferencia), rectas y razones trigonométricas.",
+    questions:[
+      {q:"Un túnel parabólico tiene su foco en (0,3) y su vértice en el origen, abriéndose hacia arriba. ¿Cuál es la ecuación de la parábola?", o:["y² = 12x","x² = 12y","x² = 3y","y² = 6x"], c:1, e:"Para una parábola vertical con vértice en el origen, la forma es x²=4py. Con foco en (0,3), p=3, así que 4p=12 y la ecuación es x²=12y."},
+      {q:"Una pista elíptica sigue (x²/25) + (y²/16) = 1. ¿A qué distancia del centro se localizan los focos?", o:["A 3 unidades","A 4 unidades","A 5 unidades","A 9 unidades"], c:0, e:"En una elipse, c² = a² − b². Aquí a²=25 y b²=16, entonces c² = 25−16 = 9, por lo que c = 3."},
+      {q:"Un terreno triangular tiene vértices A(0,0), B(4,0) y C(0,3). ¿Cuál es su perímetro?", o:["7 unidades","10 unidades","12 unidades","14 unidades"], c:2, e:"Los lados AB=4 y AC=3 son catetos; BC (hipotenusa) mide 5 por el teorema de Pitágoras (triángulo 3-4-5). Perímetro = 4+3+5 = 12 unidades."},
+      {q:"Un jardín circular está representado por x² + y² − 6x + 8y = 0. ¿Cuánto mide su radio?", o:["3 unidades","4 unidades","5 unidades","10 unidades"], c:2, e:"Completando cuadrados: (x−3)² + (y+4)² = 25. El radio es la raíz cuadrada de 25, es decir, r = 5 unidades."},
+      {q:"Una carretera es perpendicular a la calle y = −3x + 1. ¿Cuál debe ser la pendiente de la carretera?", o:["-3","3","-1/3","1/3"], c:3, e:"La pendiente de una recta perpendicular es el recíproco negativo de la original: el recíproco negativo de −3 es 1/3."},
+      {q:"Un cable suspendido forma una parábola con ecuación x² = −8y. ¿Cuál es la coordenada de su foco?", o:["(0, -2)","(-2, 0)","(0, 2)","(0, -4)"], c:0, e:"En x²=4py, 4p=−8, por lo que p=−2. El foco de una parábola vertical con vértice en el origen está en (0,p), es decir, (0,−2)."},
+      {q:"Un proyectil describe una trayectoria recta que pasa por (2,4) y (5,10). ¿Cuál es su pendiente?", o:["2","3","4","6"], c:0, e:"La pendiente se calcula como m = (y₂−y₁)/(x₂−x₁) = (10−4)/(5−2) = 6/3 = 2."},
+      {q:"En un triángulo rectángulo, el cateto opuesto mide 3 cm y el adyacente 4 cm. ¿Cuál es el valor de la secante de ese ángulo?", o:["4/5","5/4","5/3","3/5"], c:1, e:"Con catetos 3 y 4, la hipotenusa es 5 (triángulo 3-4-5). La secante es hipotenusa/adyacente = 5/4."},
+      {q:"Si la primera calle tiene la ecuación y = 4x − 2, ¿cuál ecuación podría representar a una segunda calle paralela?", o:["y = -4x + 5","y = 4x + 7","y = (1/4)x - 2","y = -(1/4)x + 3"], c:1, e:"Las rectas paralelas comparten la misma pendiente. Solo y = 4x + 7 conserva la pendiente m = 4 de la primera calle."},
+      {q:"Una rampa recta va de (0,0) a (4,3). ¿Cuál es su ángulo de inclinación respecto a la horizontal? (tan 37° = 0.75)", o:["30 grados","37 grados","45 grados","53 grados"], c:1, e:"tan θ = opuesto/adyacente = 3/4 = 0.75. Como tan 37° = 0.75, el ángulo de inclinación es 37°."}
+    ]
+  },
+
+  matecalc: { name:"Matemáticas: Cálculo Diferencial", color:"#c084fc", icon:"∫",
+    desc:"Funciones, límites y derivadas: los cimientos conceptuales del cálculo.",
+    questions:[
+      {q:"¿Cómo se define formalmente el dominio de una función real f(x)?", o:["Es el conjunto de todos los valores resultantes de la variable dependiente y","Es el conjunto de todos los valores posibles de x para los cuales la función está definida","Es el punto donde la gráfica corta al eje de las ordenadas","Es la distancia máxima entre el eje horizontal y el punto más alto de una curva"], c:1, e:"El dominio son todos los valores válidos de entrada (x) que hacen que la función produzca un resultado real; el conjunto de salidas (y) es el rango o codominio."},
+      {q:"Cuando a cada elemento distinto del dominio le corresponde un elemento distinto en el codominio, la función se clasifica como:", o:["Sobreyectiva","Inyectiva (uno a uno)","Biayectiva","Constante"], c:1, e:"Una función inyectiva asigna a cada x un valor y único, sin que dos valores distintos de x compartan la misma imagen y."},
+      {q:"¿Qué prueba geométrica determina si una curva en el plano representa una función?", o:["La prueba de la línea horizontal","La prueba de la línea vertical","El cálculo de la pendiente de la recta tangente","La intersección simétrica con el origen"], c:1, e:"Si una línea vertical corta la gráfica en más de un punto, la curva no es función (a un mismo x le corresponderían varios y); esta prueba verifica esa condición."},
+      {q:"Una función polinomial de grado 2 (f(x)=ax²+bx+c) produce una gráfica característica conocida como:", o:["Línea recta inclinada","Hipérbola simétrica","Parábola","Curva exponencial"], c:2, e:"Toda función cuadrática (grado 2) genera una parábola al graficarse en el plano cartesiano."},
+      {q:"¿Cuál es una propiedad fundamental de las funciones racionales (cociente de dos polinomios)?", o:["Su dominio siempre incluye a todos los números reales", "Presentan discontinuidades o asíntotas donde el denominador es cero","Sus gráficas son siempre líneas rectas paralelas al eje x","Crecen de forma infinitamente rápida como una exponencial"], c:1, e:"Cuando el denominador se anula, la función no está definida en ese punto, generando una discontinuidad o asíntota vertical."},
+      {q:"¿Cuál es la característica principal que define a una función continua en un intervalo abierto?", o:["Su gráfica presenta saltos abruptos en cada número entero","Puede dibujarse de un solo trazo, sin levantar el lápiz del papel","Su pendiente cambia drásticamente de signo en el origen","Está compuesta únicamente por tramos horizontales escalonados"], c:1, e:"La continuidad significa que no hay saltos, huecos ni asíntotas dentro del intervalo: se puede trazar la gráfica sin interrupciones."},
+      {q:"Las funciones seno y coseno se consideran periódicas porque:", o:["Sus valores aumentan de forma lineal hacia el infinito","Sus gráficas repiten el mismo patrón a intervalos regulares de su dominio","Poseen infinitas asíntotas verticales","Sus dominios están restringidos a valores positivos"], c:1, e:"Seno y coseno repiten exactamente su forma cada 2π radianes, por eso se llaman funciones periódicas."},
+      {q:"¿Qué significa conceptualmente que el límite de f(x) cuando x tiende a «a» sea igual a L?", o:["Que el valor exacto de la función en x=a debe ser cero","Que a medida que x se acerca a «a», f(x) se acerca tanto como se desee a L","Que la función es completamente discontinua en ese punto","Que la recta tangente tiene pendiente infinita"], c:1, e:"El límite describe el comportamiento de la función cerca de un punto, sin importar (o incluso sin necesidad de) el valor exacto de la función en ese punto."},
+      {q:"Para que exista el límite general de f(x) cuando x tiende a «a», ¿qué debe cumplirse con los límites laterales?", o:["El límite por la izquierda debe ser mayor que el de la derecha","Ambos límites laterales deben existir y ser exactamente iguales","Uno debe tender a cero y el otro al infinito","La función no debe estar definida cerca de «a»"], c:1, e:"El límite general solo existe si el límite por la izquierda y el límite por la derecha existen y coinciden en el mismo valor."},
+      {q:"¿Cuál es la interpretación geométrica de la derivada de una función en un punto?", o:["Representa el área bajo la curva","Representa la pendiente de la recta tangente a la curva en ese punto","Representa la distancia más corta desde el origen hasta la curva","Representa la coordenada de la asíntota horizontal"], c:1, e:"La derivada en un punto es la pendiente (inclinación) de la recta tangente a la curva en ese punto específico."},
+      {q:"Si una función es derivable en x=c, ¿qué se puede afirmar sobre su continuidad en ese punto?", o:["La función es necesariamente discontinua","La función es obligatoriamente continua","La continuidad no tiene relación con la derivabilidad","La función presenta una asíntota vertical"], c:1, e:"La derivabilidad en un punto siempre implica continuidad en ese punto (aunque una función continua no siempre es derivable ahí)."},
+      {q:"¿Qué establece la regla de la derivada para una función constante f(x)=c?", o:["Su derivada es siempre igual a 1","Su derivada es igual a la misma constante c","Su derivada es siempre igual a cero","Su derivada no está definida"], c:2, e:"Una función constante no cambia con x, por lo que su razón de cambio (derivada) es siempre cero."},
+      {q:"En los criterios de optimización, ¿qué se localiza donde f'(x)=0 y la derivada cambia de signo positivo a negativo?", o:["Un punto mínimo relativo","Un punto máximo relativo","Una asíntota vertical","Una discontinuidad evitable"], c:1, e:"Cuando la derivada pasa de positiva (función creciente) a negativa (función decreciente) en un punto crítico, ahí se ubica un máximo relativo."},
+      {q:"¿A qué se refiere el término «derivadas de orden superior»?", o:["A derivadas de funciones con exponentes fraccionarios o negativos","Al proceso de derivar una función de manera sucesiva (la derivada de una derivada)","A derivadas que solo se resuelven con integración","A funciones que pertenecen exclusivamente al cálculo multivariable"], c:1, e:"Las derivadas de orden superior (segunda, tercera, etc.) se obtienen derivando repetidamente la función original, es decir, derivando su propia derivada."}
+    ]
+  },
+
+  sociales: { name:"Ciencias Sociales y Filosofía", color:"#fbbf24", icon:"🏛️",
+    desc:"Historia de México y del mundo, sociología, filosofía y geografía humana.",
+    questions:[
+      {q:"¿Qué concepto de Émile Durkheim describe la situación en la que las normas sociales se debilitan, dejando a los individuos sin una guía moral clara?", o:["Materialismo histórico","Alienación económica","Anomia","Acción social racional"], c:2, e:"La anomia describe la pérdida de fuerza de las normas sociales, generando desorientación moral en los individuos; es un concepto clave de la sociología de Durkheim."},
+      {q:"¿Cuál de los siguientes acontecimientos se considera el detonante que marcó el inicio de la Primera Guerra Mundial en 1914?", o:["La invasión alemana a Polonia","El asesinato del archiduque Francisco Fernando en Sarajevo","La Revolución Rusa y la caída del zar","La firma del Tratado de Versalles"], c:1, e:"El magnicidio del archiduque Francisco Fernando en Sarajevo, en junio de 1914, desencadenó la cadena de alianzas que llevó a la Primera Guerra Mundial."},
+      {q:"¿Qué corriente ética considera que el criterio moral es buscar el mayor bien o felicidad para el mayor número de personas?", o:["Utilitarismo","Deontología kantiana","Hedonismo absoluto","Estoicismo"], c:0, e:"El utilitarismo, asociado a Bentham y Mill, evalúa la moralidad de una acción según la utilidad o felicidad que genera para la mayoría."},
+      {q:"¿Qué filósofo presocrático propuso que el agua era el principio original («arjé») de todas las cosas?", o:["Anaxímenes","Tales de Mileto","Heráclito","Pitágoras"], c:1, e:"Tales de Mileto, considerado el primer filósofo occidental, propuso al agua como la sustancia primordial de la que todo se origina."},
+      {q:"Durante el periodo posrevolucionario en México, ¿qué presidente fundó el PNR en 1929 e inició el Maximato?", o:["Lázaro Cárdenas","Plutarco Elías Calles","Álvaro Obregón","Venustiano Carranza"], c:1, e:"Plutarco Elías Calles fundó el Partido Nacional Revolucionario en 1929 y mantuvo el poder de facto durante el Maximato, hasta la llegada de Cárdenas."},
+      {q:"¿Qué filósofo clásico propuso la teoría de las ideas, afirmando que el mundo sensible es solo una copia imperfecta del mundo inteligible?", o:["Aristóteles","Platón","Sócrates","Epicuro"], c:1, e:"Platón desarrolló la teoría de las ideas (o formas): el mundo que percibimos con los sentidos es una sombra imperfecta del mundo perfecto de las ideas."},
+      {q:"¿Qué modelo económico se implementó en México de 1940 a 1970, con crecimiento acelerado y sustitución de importaciones?", o:["Modelo de Desarrollo Estabilizador (Milagro Mexicano)","Modelo Neoliberal","Modelo de Desarrollo Compartido","Crecimiento Hacia Afuera"], c:0, e:"El Desarrollo Estabilizador (o «Milagro Mexicano») impulsó la industrialización nacional con fuerte apoyo estatal y sustitución de importaciones entre 1940 y 1970."},
+      {q:"¿Qué pensador de la Ilustración propuso, en «El espíritu de las leyes», dividir el poder político en Ejecutivo, Legislativo y Judicial?", o:["Jean-Jacques Rousseau","Montesquieu","John Locke","Thomas Hobbes"], c:1, e:"Montesquieu propuso la división de poderes como mecanismo para evitar la tiranía y equilibrar el ejercicio del poder político."},
+      {q:"¿Qué filósofo del siglo XIX propuso el materialismo histórico, afirmando que las transformaciones sociales están determinadas por la lucha de clases?", o:["Friedrich Nietzsche","Karl Marx","Auguste Comte","Immanuel Kant"], c:1, e:"Karl Marx propuso el materialismo histórico como método de análisis: los modos de producción y la lucha de clases explican el cambio social."},
+      {q:"Durante la Colonia, ¿cómo se llamaba el sistema por el que la Corona otorgaba a un colonizador el tributo y trabajo de un grupo indígena a cambio de «protegerlos y evangelizarlos»?", o:["Capitanía","Encomienda","Ejido","Intendencia"], c:1, e:"La encomienda era un sistema de explotación indígena disfrazado de protección y evangelización, característico de la Nueva España virreinal."},
+      {q:"¿Qué filósofo presocrático propuso el «Ápeiron» (lo indeterminado o infinito) como principio original del universo?", o:["Tales de Mileto","Anaximandro","Heráclito","Parménides"], c:1, e:"Anaximandro, discípulo de Tales, propuso el Ápeiron —una sustancia indefinida e ilimitada— como origen de todas las cosas, en lugar de un elemento concreto."},
+      {q:"¿Qué documento proclamado por Emiliano Zapata en 1911 exigía la devolución de tierras bajo el lema «Tierra y Libertad»?", o:["Plan de San Luis","Plan de Ayala","Plan de Guadalupe","Tratados de Bucareli"], c:1, e:"El Plan de Ayala, proclamado por Zapata en 1911, exigía la restitución de tierras a comunidades campesinas e indígenas."},
+      {q:"¿Qué crisis internacional de 1962 puso al mundo al borde de una guerra nuclear por bases soviéticas en el Caribe?", o:["La crisis de los misiles en Cuba","El bloqueo de Berlín","La guerra de Corea","La crisis del canal de Suez"], c:0, e:"La Crisis de los Misiles en Cuba (1962) llevó a Estados Unidos y la URSS al borde de un conflicto nuclear directo durante la Guerra Fría."},
+      {q:"¿Qué corriente filosófica moderna, representada por Descartes, sostiene que la razón —no los sentidos— es la fuente principal del conocimiento?", o:["Empirismo","Racionalismo","Escepticismo","Pragmatismo"], c:1, e:"El racionalismo de Descartes confía en la razón deductiva como vía segura del conocimiento, desconfiando de la experiencia sensorial, que considera engañosa."},
+      {q:"¿Qué filósofo contemporáneo fundó el Existencialismo, afirmando que «la existencia precede a la esencia»?", o:["Friedrich Hegel","Jean-Paul Sartre","Immanuel Kant","Arthur Schopenhauer"], c:1, e:"Sartre sostuvo que el ser humano primero existe y después se define a sí mismo mediante sus elecciones libres, sin una esencia predeterminada."},
+      {q:"¿Qué pensador del absolutismo justificó la concentración del poder en el monarca en su obra «Leviatán»?", o:["John Locke","Thomas Hobbes","Montesquieu","Karl Marx"], c:1, e:"Hobbes, en «Leviatán», afirmó que en el estado de naturaleza «el hombre es el lobo del hombre», por lo que un poder absoluto es necesario para garantizar el orden."}
+    ]
+  },
+
+  fisica: { name:"Física", color:"#f87171", icon:"⚛️",
+    desc:"Cinemática, dinámica, energía, hidrostática y electromagnetismo básico.",
+    questions:[
+      {q:"Se convierte una velocidad de 108 km/h al Sistema Internacional. ¿Cuál es su valor en m/s?", o:["15 m/s","20 m/s","30 m/s","45 m/s"], c:2, e:"Para convertir km/h a m/s se divide entre 3.6: 108 ÷ 3.6 = 30 m/s."},
+      {q:"Un automóvil viaja a 25 m/s constantes durante 20 segundos. ¿Qué distancia recorre?", o:["400 metros","500 metros","600 metros","800 metros"], c:1, e:"En movimiento rectilíneo uniforme, distancia = velocidad × tiempo = 25 m/s × 20 s = 500 metros."},
+      {q:"Un objeto lanzado verticalmente hacia arriba pierde velocidad por la gravedad. ¿Qué ocurre con su aceleración justo en el punto más alto?", o:["Se vuelve igual a cero de forma instantánea","Sigue siendo igual a la aceleración de la gravedad","Se duplica debido al cambio de sentido","Se vuelve infinita antes de iniciar el descenso"], c:1, e:"La aceleración de la gravedad (g) es constante durante todo el trayecto del objeto, incluso cuando su velocidad es momentáneamente cero en el punto más alto."},
+      {q:"Un ciclista parte del reposo con una aceleración constante de 2 m/s². ¿Qué velocidad alcanza en 6 segundos?", o:["3 m/s","8 m/s","12 m/s","24 m/s"], c:2, e:"vf = v0 + a·t = 0 + (2)(6) = 12 m/s."},
+      {q:"Una caja de 8 kg es arrastrada con una aceleración de 4 m/s². ¿Cuál es la magnitud de la fuerza aplicada?", o:["2 Newtons","12 Newtons","32 Newtons","64 Newtons"], c:2, e:"Por la segunda ley de Newton, F = m·a = 8 kg × 4 m/s² = 32 Newtons."},
+      {q:"Una grúa eleva una viga aplicando 2,000 N a lo largo de 6 metros verticales. ¿Qué trabajo mecánico realiza?", o:["333 Joules","2,006 Joules","12,000 Joules","24,000 Joules"], c:2, e:"El trabajo se calcula como W = F × d = 2,000 N × 6 m = 12,000 Joules."},
+      {q:"Un contenedor de 50 kg está suspendido a 4 m de altura (g=10 m/s²). ¿Cuál es su energía potencial gravitacional?", o:["200 Joules","500 Joules","2,000 Joules","4,000 Joules"], c:2, e:"Ep = m·g·h = 50 kg × 10 m/s² × 4 m = 2,000 Joules."},
+      {q:"¿Qué propiedad de la materia mide la resistencia de un cuerpo a cambiar su estado de reposo o movimiento?", o:["El peso","La densidad","La masa (Inercia)","El volumen"], c:2, e:"La masa mide cuantitativamente la inercia de un cuerpo, es decir, su resistencia a cambiar su estado de movimiento, tal como establece la primera ley de Newton."},
+      {q:"Un objeto de 2 kg se mueve a 6 m/s. ¿Cuál es su energía cinética?", o:["12 Joules","24 Joules","36 Joules","72 Joules"], c:2, e:"Ec = ½·m·v² = ½ × 2 × 6² = ½ × 2 × 36 = 36 Joules."},
+      {q:"Un bloque está en equilibrio estático total sobre una superficie horizontal. ¿Cuánto debe valer la suma de todas las fuerzas externas sobre él?", o:["Debe ser igual al peso multiplicado por la gravedad","Debe ser estrictamente igual a cero","Debe ser mayor que la fricción estática máxima","Debe tender al infinito positivo"], c:1, e:"En equilibrio estático no hay aceleración, así que por la primera ley de Newton la suma vectorial de todas las fuerzas debe ser exactamente cero."},
+      {q:"Si la velocidad de un móvil se duplica manteniendo su masa constante, ¿qué ocurre con su energía cinética?", o:["Se mantiene igual","Se duplica","Se cuadruplica","Se reduce a la mitad"], c:2, e:"Como Ec = ½mv² depende del cuadrado de la velocidad, si v se duplica, Ec se multiplica por 2² = 4, es decir, se cuadruplica."},
+      {q:"Al aplicar presión en un émbolo de un fluido confinado, esta se transmite íntegramente en todas direcciones. ¿Qué principio describe esto?", o:["Principio de Arquímedes","Principio de Pascal","Teorema de Bernoulli","Ecuación de continuidad"], c:1, e:"El Principio de Pascal establece que la presión aplicada a un fluido incompresible confinado se transmite sin pérdida a todos los puntos del fluido."},
+      {q:"Un bloque flota parcialmente sumergido y recibe un empuje igual al peso del líquido desalojado. ¿Qué principio describe esto?", o:["Teorema de Torricelli","Principio de Arquímedes","Ley de Hooke","Efecto Joule"], c:1, e:"El Principio de Arquímedes establece que el empuje sobre un cuerpo sumergido (total o parcialmente) es igual al peso del fluido que desaloja."},
+      {q:"Un ingeniero mide 100 °C en una caldera. ¿Cuál es el valor equivalente en la escala Kelvin?", o:["0 K","100 K","273 K","373 K"], c:3, e:"Para convertir de Celsius a Kelvin se suma 273: K = °C + 273 = 100 + 273 = 373 K."},
+      {q:"Al mover un imán rápidamente dentro y fuera de una bobina de cobre se genera una corriente eléctrica medible. ¿Qué fenómeno describe esto?", o:["Resistencia eléctrica por frotamiento","Inducción electromagnética (Ley de Faraday)","Magnetismo terrestre estático","Polarización dieléctrica"], c:1, e:"La inducción electromagnética (Ley de Faraday) establece que un campo magnético variable induce una corriente eléctrica en un conductor cercano."},
+      {q:"Un recipiente cilíndrico se llena de agua hasta 2 m de altura (densidad=1,000 kg/m³, g=10 m/s²). ¿Cuál es la presión hidrostática en el fondo?", o:["2,000 Pascales","5,000 Pascales","20,000 Pascales","40,000 Pascales"], c:2, e:"La presión hidrostática se calcula como P = ρ·g·h = 1,000 × 10 × 2 = 20,000 Pascales."}
+    ]
+  },
+
+  ingles: { name:"Inglés", color:"#2dd4bf", icon:"🇬🇧",
+    desc:"Vocabulario básico, tiempos verbales y gramática esencial (pronombres, artículos, modales).",
+    questions:[
+      {q:"Which of the following words is a basic action verb?", o:["Beautiful","Run","Yesterday","Always"], c:1, e:"«Run» is an action verb (something you do); «beautiful» is an adjective, «yesterday» is a time expression and «always» is an adverb of frequency."},
+      {q:"Complete: \"She is from France, so she is _____.\"", o:["French","France","Frenchman","Frencher"], c:0, e:"«French» is the correct nationality adjective for someone from France; «France» is the country name, not the adjective form."},
+      {q:"Which season of the year is usually the coldest?", o:["Summer","Spring","Winter","Autumn"], c:2, e:"Winter is typically the coldest season of the year in most temperate climates."},
+      {q:"What time is it if the clock shows 8:00?", o:["It's eight o'clock","It's half past eight","It's quarter to eight","It's eight thirty"], c:0, e:"«Eight o'clock» is the correct way to express the exact hour 8:00; the other options describe 8:30 or 7:45."},
+      {q:"Complete: \"I _____ brush my teeth every day.\" (100% of the time)", o:["Never","Sometimes","Always","Rarely"], c:2, e:"«Always» expresses 100% frequency, matching an action that happens every day without exception."},
+      {q:"Complete in Simple Present: \"He _____ to school every morning.\"", o:["Go","Goes","Going","Went"], c:1, e:"With third-person singular subjects (he/she/it) in Simple Present, the verb adds -s/-es: «goes», not the base form «go»."},
+      {q:"Complete in Present Progressive: \"Look! She is _____ a book right now.\"", o:["Read","Reads","Reading","Readed"], c:2, e:"Present Progressive uses «is/are + verb-ing»; «reading» is the correct -ing form, and «readed» does not exist since «read» is irregular."},
+      {q:"What is the past tense form of the irregular verb «GO»?", o:["Goed","Gone","Went","Going"], c:2, e:"«Go» is an irregular verb; its Simple Past form is «went» (its past participle is «gone», used in perfect tenses, not Simple Past)."},
+      {q:"Complete using 'be going to': \"We are going to _____ a party next Saturday.\"", o:["Have","Having","Had","Has"], c:0, e:"After «going to», the base form of the verb is used: «have a party», without conjugation."},
+      {q:"Complete in Present Perfect: \"I have _____ my homework.\"", o:["Do","Did","Done","Doing"], c:2, e:"Present Perfect uses «have/has + past participle»; the past participle of «do» is «done», not «did» (Simple Past) or «do» (base form)."},
+      {q:"Choose the correct possessive adjective: \"This is _____ car.\" (The car belongs to me)", o:["My","Your","His","Her"], c:0, e:"«My» is the possessive adjective for the first person singular, matching a car that belongs to the speaker."},
+      {q:"Which word is a personal pronoun used as a subject?", o:["Him","He","His","Himself"], c:1, e:"«He» is a subject pronoun (used before the verb); «him» is an object pronoun, «his» is possessive, and «himself» is reflexive."},
+      {q:"Which modal verb is used to express ability? \"I _____ speak English.\"", o:["Must","Should","Can","May"], c:2, e:"«Can» expresses ability or capacity; «must» expresses obligation, «should» advice, and «may» possibility or permission."},
+      {q:"Complete with the correct preposition of place: \"The keys are _____ the box.\" (Inside)", o:["On","In","Under","At"], c:1, e:"«In» indicates something is inside a container or enclosed space, matching «inside the box»."},
+      {q:"Which of the following nouns is uncountable?", o:["Apple","Car","Water","Book"], c:2, e:"«Water» cannot be counted individually in this context (no natural plural «waters» for everyday use), unlike apple, car, or book, which are countable."},
+      {q:"Complete the First Conditional: \"If it rains, we _____ stay at home.\"", o:["Will","Would","Did","Were"], c:0, e:"The First Conditional uses «if + present simple, will + base verb» to express a likely future result: «If it rains, we will stay at home»."}
+    ]
+  }
+};
+
+const state = {};
+Object.keys(DATA).forEach(k => { state[k] = new Array(DATA[k].questions.length).fill(null); });
+let currentCat = Object.keys(DATA)[0];
+
+function totalCounts(){
+  let answered=0, correct=0, total=0;
+  Object.keys(DATA).forEach(k=>{
+    total += DATA[k].questions.length;
+    state[k].forEach((v,i)=>{
+      if(v!==null){ answered++; if(v===DATA[k].questions[i].c) correct++; }
+    });
+  });
+  return {answered, correct, total};
+}
+
+function renderNav(){
+  const nav = document.getElementById('cat-nav');
+  nav.innerHTML = '';
+  Object.keys(DATA).forEach(key=>{
+    const cat = DATA[key];
+    const answered = state[key].filter(v=>v!==null).length;
+    const correct = state[key].reduce((a,v,i)=> a + (v===cat.questions[i].c?1:0), 0);
+    const pct = Math.round((answered/cat.questions.length)*100);
+    const pill = document.createElement('div');
+    pill.className = 'cat-pill' + (key===currentCat?' active':'');
+    pill.style.setProperty('--pill-color', cat.color);
+    pill.innerHTML = `
+      <div class="cat-label">${cat.icon} ${cat.name}</div>
+      <div class="cat-sub">${correct}/${cat.questions.length} correctas</div>
+      <div class="cat-progress"><div style="width:${pct}%"></div></div>
+    `;
+    pill.addEventListener('click', ()=>{ currentCat = key; renderAll(); window.scrollTo({top:0, behavior:'smooth'}); });
+    nav.appendChild(pill);
+  });
+}
+
+function renderHeadAndQuestions(){
+  const cat = DATA[currentCat];
+  document.body.style.setProperty('--cat-color', cat.color);
+  const answered = state[currentCat].filter(v=>v!==null).length;
+  const correct = state[currentCat].reduce((a,v,i)=> a + (v===cat.questions[i].c?1:0), 0);
+
+  const head = document.getElementById('section-head');
+  head.innerHTML = `
+    <div>
+      <h2>${cat.icon} ${cat.name}</h2>
+      <div class="desc">${cat.desc}</div>
+    </div>
+    <div style="display:flex; align-items:center;">
+      <span class="score-badge">${correct} / ${cat.questions.length} correctas${answered<cat.questions.length ? ' · '+(cat.questions.length-answered)+' pendientes' : ' · ¡completo!'}</span>
+      <button class="reset-btn" id="reset-btn">Reiniciar sección</button>
+    </div>
+  `;
+  document.getElementById('reset-btn').addEventListener('click', ()=>{
+    state[currentCat] = new Array(cat.questions.length).fill(null);
+    renderAll();
+  });
+
+  const container = document.getElementById('questions');
+  container.innerHTML = '';
+  const letters = ['A','B','C','D'];
+
+  cat.questions.forEach((item, qi)=>{
+    const card = document.createElement('div');
+    card.className = 'qcard';
+    const chosen = state[currentCat][qi];
+    const answeredThis = chosen !== null;
+
+    let optsHtml = '';
+    item.o.forEach((opt, oi)=>{
+      let cls = 'opt';
+      if(answeredThis){
+        cls += ' locked';
+        if(oi === item.c) cls += ' correct';
+        else if(oi === chosen) cls += ' wrong';
+        else cls += ' dim';
+      }
+      optsHtml += `<button class="${cls}" data-qi="${qi}" data-oi="${oi}" ${answeredThis?'disabled':''}>
+        <span class="tag">${letters[oi]}</span><span>${opt}</span>
+      </button>`;
+    });
+
+    let feedbackHtml = '';
+    if(answeredThis){
+      const isOk = chosen === item.c;
+      feedbackHtml = `<div class="feedback show ${isOk?'ok':'no'}">
+        <div class="lead">${isOk ? '✅ ¡Correcto!' : '❌ Incorrecto — respuesta correcta: '+letters[item.c]+') '+item.o[item.c]}</div>
+        <div class="body">${item.e}</div>
+      </div>`;
+    }
+
+    card.innerHTML = `
+      <span class="qnum">Pregunta ${qi+1} de ${cat.questions.length}</span>
+      <div class="qtext">${item.q}</div>
+      <div class="options">${optsHtml}</div>
+      ${feedbackHtml}
+    `;
+    container.appendChild(card);
+  });
+
+  container.querySelectorAll('.opt:not(.locked)').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const qi = parseInt(btn.dataset.qi);
+      const oi = parseInt(btn.dataset.oi);
+      state[currentCat][qi] = oi;
+      renderAll();
+    });
+  });
+}
+
+function renderOverall(){
+  const {answered, correct, total} = totalCounts();
+  document.getElementById('stat-answered').textContent = answered + '/' + total;
+  document.getElementById('stat-correct').textContent = correct;
+  document.getElementById('stat-accuracy').textContent = answered ? Math.round((correct/answered)*100)+'%' : '—';
+  document.getElementById('overall-fill').style.width = (total? (answered/total*100):0) + '%';
+}
+
+function renderAll(){
+  renderNav();
+  renderHeadAndQuestions();
+  renderOverall();
+}
+
+renderAll();
+</script>
+</body>
+</html>
